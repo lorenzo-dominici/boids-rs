@@ -1,6 +1,3 @@
-use std::env;
-
-use log::error;
 use serde::{Deserialize, Serialize};
 use toml;
 use glam::Vec3A;
@@ -32,7 +29,6 @@ struct FlockBuilder {
 impl FlockBuilder {
     pub fn build(&self, env_size: f32) -> Vec<Boid> {
         let mut boids = Vec::with_capacity(self.boids);
-        let flock = self.flock.clone();
         for _ in 0..self.boids {
             let length = rand::random::<f32>() * env_size * 0.75;
             let versor = Vec3A::new(rand::random::<f32>() - 0.5, rand::random::<f32>() - 0.5, rand::random::<f32>() - 0.5).normalize();
@@ -42,7 +38,7 @@ impl FlockBuilder {
             let mut boid_bias = model::Bias{weight: 0.0, pos: Vec3A::new(0.0, 0.0, 0.0)};
             for bias in self.biases.iter() {
                 if rand::random::<f32>() < bias.prob {
-                    boid_bias = model::Bias{weight: bias.weight_range.random(), pos: Vec3A::new(bias.position.0, bias.position.1, bias.position.2)};
+                    boid_bias = model::Bias::new(bias.weight_range.random(), Vec3A::new(bias.position.0, bias.position.1, bias.position.2));
                     break;
                 }
             }

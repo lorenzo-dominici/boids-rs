@@ -116,19 +116,13 @@ impl Boid<'_> {
 
         let vel = self.vel.clone();
 
-        self.vel += behavior + env(self.pos) * (-self.pos.normalize()) + self.bias.get(self.pos);
+        self.vel += behavior + env(self.pos).abs() * (-self.pos.normalize()) + self.bias.get(self.pos);
 
-        if self.vel.length() > self.flock.kind.speed.scale(self.state).max {
-            self.vel = self.vel.normalize() * self.flock.kind.speed.scale(self.state).max;
-        }
+        self.vel = self.flock.kind.speed.scale(self.state).clamp(self.vel.length()) * self.vel.normalize();
 
-        if self.vel.length() / vel.length() > self.flock.kind.acceleration.scale(self.state).max {
-            self.vel = self.vel.normalize() * vel.length() * (1.0 + self.flock.kind.acceleration.scale(self.state).max);
-        }
+        self.vel = (1.0 + self.flock.kind.acceleration.scale(self.state).clamp(self.vel.length() / vel.length() - 1.0)) * vel.length() * self.vel.normalize();
 
-        if (self.vel.normalize().dot(vel.normalize()) - 1.0) / (-2.0) > self.flock.kind.angular_speed.scale(self.state).max {
-            self.vel = self.vel.length() * Boid::rotate_towards(vel, self.vel, self.flock.kind.angular_speed.scale(self.state).max * std::f32::consts::PI);
-        }
+        self.vel = self.vel.length() * Boid::rotate_towards(self.vel, vel, self.flock.kind.angular_speed.scale(self.state).clamp((self.vel.normalize().dot(vel.normalize()) - 1.0) / (-2.0)) * std::f32::consts::PI);
 
         self.pos += self.vel;
 
