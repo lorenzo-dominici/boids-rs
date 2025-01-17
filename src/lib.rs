@@ -52,7 +52,6 @@ impl Simulation {
     }
 
     fn init(&self) -> Context {
-        pretty_env_logger::init();
         Context::new(&self.config)
     }
 }

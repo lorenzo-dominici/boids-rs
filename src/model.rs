@@ -2,7 +2,6 @@ use rayon::prelude::*;
 
 use serde::{Deserialize, Serialize};
 use glam::Vec3A;
-use log::error;
 
 #[derive(Clone, Debug)]
 pub struct Boid<'a> {
@@ -191,7 +190,7 @@ impl Kind {
             (true, false, false, true) => Role::Prey,
             (false, true, true, false) => Role::Predator,
             (true, true, true, true) => Role::Rival,
-            _ => {error!("Invalid boid kind comparison"); Role::Peer},
+            _ => {panic!("Invalid Comparison")},
         }
     }
 }
