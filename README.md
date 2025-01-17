@@ -11,12 +11,14 @@ Boids-rs is a Rust project that simulates boids behavior using CPU parallelizati
 ## Installation
 
 1. Clone the repository:
+
     ```sh
     git clone https://github.com/lorenzo-dominici/boids-rs.git
     cd boids-rs
     ```
 
 2. Install the required dependencies:
+
     ```sh
     cargo build
     ```
@@ -24,6 +26,7 @@ Boids-rs is a Rust project that simulates boids behavior using CPU parallelizati
 ## Usage
 
 Run the simulation:
+
 ```sh
 cargo run
 ```
