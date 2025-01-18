@@ -6,7 +6,10 @@ use crate::model::{self, Boid, Flock, Range};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Config {
+    pub iters: isize,
+    pub layout: usize,
     env_size: f32,
+    turnback: f32,
     flocks: Vec<FlockBuilder>,
 }
 
@@ -61,17 +64,17 @@ pub struct Context<'a> {
     pub prev: Vec<Boid<'a>>,
     pub next: Vec<Boid<'a>>,
     pub env_size: f32,
+    pub turnback: f32,
 }
 
 impl<'a> Context<'a> {
     pub fn new(config: &'a Config) -> Context {
-        let env_size = config.env_size;
         let boids_number: usize = config.flocks.iter().map(|flock| flock.boids).sum();
         let mut vec: Vec<Boid> = Vec::with_capacity(boids_number);
         for flock_builder in config.flocks.iter() {
-            let mut boids = flock_builder.build(env_size);
+            let mut boids = flock_builder.build(config.env_size);
             vec.append(&mut boids);
         }
-        Context { prev: vec.clone(), next: vec, env_size }
+        Context { prev: vec.clone(), next: vec, env_size: config.env_size, turnback: config.turnback }
     }
 }

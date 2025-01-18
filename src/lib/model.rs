@@ -1,3 +1,5 @@
+use core::panic;
+
 use rayon::prelude::*;
 
 use serde::{Deserialize, Serialize};
@@ -31,8 +33,8 @@ impl Boid<'_> {
         self.flock.kind.protected.scale(self.state).contains((self.pos - boid.pos).length())
     }
 
-    pub fn update<F: Fn(Vec3A) -> f32>(&mut self, boids: &Vec<Boid>, env: F) {
-        let (sep_sum, sep_count, align_sum, align_count, coh_sum, coh_count) = boids.par_iter()
+    pub fn update<F: Fn(&Boid) -> (Vec3A, Vec3A)>(&mut self, boids: &Vec<Boid>, environment: F) {
+        let (sep_sum, sep_count, align_sum, align_count, coh_sum, coh_count) = boids.par_iter().filter(|boid| boid.pos != self.pos)
             .map(|boid| {
                 let role = self.flock.kind.compare(&boid.flock.kind);
                 let sep = if self.is_too_close(boid) {
@@ -115,31 +117,31 @@ impl Boid<'_> {
 
         let vel = self.vel.clone();
 
-        self.vel += behavior + env(self.pos).abs() * (-self.pos.normalize()) + self.bias.get(self.pos);
+        self.vel += behavior + self.bias.get(&self.pos) + environment(self).0;
+        
+        self.vel = (self.flock.kind.acceleration.scale(self.state).clamp((self.vel - vel).length()) + vel.length()) * self.vel.normalize();
+
+        let angle = vel.normalize().dot(self.vel.normalize()).clamp(-1.0, 1.0).acos().abs() / std::f32::consts::PI;
+
+        self.vel = self.vel.length() * Boid::rotate_towards(vel, self.vel, self.flock.kind.angular_speed.scale(self.state).clamp(angle));
 
         self.vel = self.flock.kind.speed.scale(self.state).clamp(self.vel.length()) * self.vel.normalize();
 
-        self.vel = (1.0 + self.flock.kind.acceleration.scale(self.state).clamp(self.vel.length() / vel.length() - 1.0)) * vel.length() * self.vel.normalize();
+        self.pos += self.vel * (1.0 - self.flock.kind.momentum) + vel * self.flock.kind.momentum;
 
-        self.vel = self.vel.length() * Boid::rotate_towards(self.vel, vel, self.flock.kind.angular_speed.scale(self.state).clamp((self.vel.normalize().dot(vel.normalize()) - 1.0) / (-2.0)) * std::f32::consts::PI);
-
-        self.pos += self.vel;
-
-        if env(self.pos) < 0.0 {
-            self.pos -= -self.pos.normalize() * env(self.pos);
-        }
+        self.pos = environment(self).1;
 
     }
 
     fn rotate_towards(a: Vec3A, b: Vec3A, angle: f32) -> Vec3A {
-        let dot = a.dot(b).clamp(-1.0, 1.0); // Ensure the dot product is within the valid range
-        let current_angle = dot.acos(); // Calculate the current angle between a and b
+        let dot = a.normalize().dot(b.normalize()).clamp(-1.0, 1.0); // Ensure the dot product is within the valid range
+        let current_angle = dot.acos().abs() / std::f32::consts::PI; // Calculate the current angle between a and b
 
         if current_angle <= angle {
             return b; // If the current angle is already less than or equal to the target angle, return b
         }
 
-        let t = angle / current_angle; // Calculate the interpolation factor
+        let t = (angle / current_angle).abs(); // Calculate the interpolation factor
         a.lerp(b, t).normalize() // Perform the spherical linear interpolation and normalize the result
     }
 }
@@ -155,7 +157,7 @@ impl Bias {
         Bias { weight, pos }
     }
 
-    pub fn get(&self, pos: Vec3A) -> Vec3A {
+    pub fn get(&self, pos: &Vec3A) -> Vec3A {
         self.weight * (self.pos - pos).normalize()
     }
 }
@@ -176,6 +178,7 @@ pub struct Kind {
     pub speed: Range,
     pub angular_speed: Range,
     pub acceleration: Range,
+    pub momentum: f32,
     pub vision: Range,
     pub protected: Range,
     pub sep_weight: f32,
@@ -237,14 +240,14 @@ impl Range {
     }
 }
 
-pub fn sphere_env(pos: Vec3A, env_size: f32) -> f32 {
-    if pos.length() > env_size * 0.9 {
-        if pos.length() > env_size {
-            env_size - pos.length()
-        } else {
-            env_size * 0.1
-        }
+pub fn sphere_env(boid: &Boid, env_size: f32, turnback: f32) -> (Vec3A, Vec3A) {
+    (if boid.pos.length() > env_size * 0.8 {
+        -boid.pos.normalize() * turnback
     } else {
-        0.0
-    }
+        Vec3A::ZERO
+    }, if boid.pos.length() + boid.flock.kind.size/2.0 > env_size {
+        boid.pos.normalize() * (env_size - boid.flock.kind.size/2.0)
+    } else {
+        boid.pos.clone()
+    })
 }

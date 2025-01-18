@@ -1,5 +1,5 @@
-use time::{OffsetDateTime, format_description::well_known::Rfc3339};
-use boids_rs::{Config, Simulation};
+use time::{OffsetDateTime, format_description};
+use boids::{Config, Simulation};
 use rerun::{self, RecordingStream};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -17,7 +17,7 @@ fn setup() -> Result<(Config, RecordingStream), Box<dyn std::error::Error>> {
     let path = parse_args()?;
     let config = Config::load(&path)?;
     let rec = rerun::RecordingStreamBuilder::new("boids")
-        .save(format!("boids-{}.rrd", OffsetDateTime::now_utc().format(&Rfc3339)?))?;
+        .save(format!("boids_{}.rrd", OffsetDateTime::now_utc().format(&format_description::parse("[year]-[month]-[day]_[hour]-[minute]-[second]")?)?))?;
     Ok((config, rec))
 }
 
