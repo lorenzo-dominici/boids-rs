@@ -6,8 +6,8 @@ use crate::model::{self, Boid, Flock, Range};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Config {
-    pub iters: isize,
-    pub layout: usize,
+    pub iters: u32,
+    pub layout: u32,
     env_size: f32,
     turnback: f32,
     flocks: Vec<FlockBuilder>,

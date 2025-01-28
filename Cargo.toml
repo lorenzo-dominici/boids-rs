@@ -9,6 +9,7 @@ path = "src/lib/lib.rs"
 
 [dependencies]
 glam = "0.29.2"
+indicatif = "0.17.11"
 rand = "0.8.5"
 rayon = "1.10.0"
 rerun = "0.21.0"

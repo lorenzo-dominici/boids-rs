@@ -2,7 +2,7 @@
 
 iters = 5000
 env_size = 100.0
-turnback = 0.1
+turnback = 0.25
 layout = 16
 
 [[flocks]]

@@ -26,14 +26,14 @@ impl Boid<'_> {
     }
 
     pub fn is_in_sight(&self, boid: &Boid) -> bool {
-        self.flock.kind.vision.scale(self.state).contains((self.pos - boid.pos).length())
+        self.flock.kind.vision.scale(self.state).contains(self.pos.distance(boid.pos))
     }
 
     pub fn is_too_close(&self, boid: &Boid) -> bool {
-        self.flock.kind.protected.scale(self.state).contains((self.pos - boid.pos).length())
+        self.flock.kind.protected.scale(self.state).contains(self.pos.distance(boid.pos))
     }
 
-    pub fn update<F: Fn(&Boid) -> (Vec3A, Vec3A)>(&mut self, boids: &Vec<Boid>, environment: F) {
+    pub fn update<T: Environment>(&mut self, boids: &Vec<Boid>, environment: &T) {
         let (sep_sum, sep_count, align_sum, align_count, coh_sum, coh_count) = boids.par_iter().filter(|boid| boid.pos != self.pos)
             .map(|boid| {
                 let role = self.flock.kind.compare(&boid.flock.kind);
@@ -117,32 +117,31 @@ impl Boid<'_> {
 
         let vel = self.vel.clone();
 
-        self.vel += behavior + self.bias.get(&self.pos) + environment(self).0;
+        self.vel += behavior + self.bias.get(&self.pos) + environment.repulsion(self);
         
         self.vel = (self.flock.kind.acceleration.scale(self.state).clamp((self.vel - vel).length()) + vel.length()) * self.vel.normalize();
 
-        let angle = vel.normalize().dot(self.vel.normalize()).clamp(-1.0, 1.0).acos().abs() / std::f32::consts::PI;
+        let angle = vel.angle_between(self.vel) / std::f32::consts::PI;
 
-        self.vel = self.vel.length() * Boid::rotate_towards(vel, self.vel, self.flock.kind.angular_speed.scale(self.state).clamp(angle));
+        self.vel = Boid::rotate_towards(self.vel, vel, self.flock.kind.angular_speed.scale(self.state).clamp(angle));
 
         self.vel = self.flock.kind.speed.scale(self.state).clamp(self.vel.length()) * self.vel.normalize();
 
-        self.pos += self.vel * (1.0 - self.flock.kind.momentum) + vel * self.flock.kind.momentum;
+        self.pos += self.vel + self.flock.kind.momentum * (vel - self.vel);
 
-        self.pos = environment(self).1;
+        environment.correction(self);
 
     }
 
     fn rotate_towards(a: Vec3A, b: Vec3A, angle: f32) -> Vec3A {
-        let dot = a.normalize().dot(b.normalize()).clamp(-1.0, 1.0); // Ensure the dot product is within the valid range
-        let current_angle = dot.acos().abs() / std::f32::consts::PI; // Calculate the current angle between a and b
+        let current_angle = a.angle_between(b) / std::f32::consts::PI;
 
         if current_angle <= angle {
-            return b; // If the current angle is already less than or equal to the target angle, return b
+            return a;
         }
 
-        let t = (angle / current_angle).abs(); // Calculate the interpolation factor
-        a.lerp(b, t).normalize() // Perform the spherical linear interpolation and normalize the result
+        let t = angle / current_angle;
+        a.normalize().lerp(b.normalize(), 1.0 - t).normalize() * a.length()
     }
 }
 
@@ -240,14 +239,36 @@ impl Range {
     }
 }
 
-pub fn sphere_env(boid: &Boid, env_size: f32, turnback: f32) -> (Vec3A, Vec3A) {
-    (if boid.pos.length() > env_size * 0.8 {
-        -boid.pos.normalize() * turnback
-    } else {
-        Vec3A::ZERO
-    }, if boid.pos.length() + boid.flock.kind.size/2.0 > env_size {
-        boid.pos.normalize() * (env_size - boid.flock.kind.size/2.0)
-    } else {
-        boid.pos.clone()
-    })
+pub trait Environment {
+    fn repulsion(&self, boid: &Boid) -> Vec3A;
+    fn correction(&self, boid: &mut Boid);
+}
+
+#[derive(Clone, Debug)]
+pub struct SphereEnv {
+    pub size: f32,
+    pub turnback: f32,
+}
+
+impl SphereEnv {
+    pub fn new(size: f32, turnback: f32) -> SphereEnv {
+        SphereEnv { size, turnback }
+    }
+}
+
+impl Environment for SphereEnv {
+    fn repulsion(&self, boid: &Boid) -> Vec3A {
+        let perspective = (boid.pos.length() + boid.flock.kind.vision.scale(boid.state).max - self.size) / (boid.flock.kind.vision.scale(boid.state).max / boid.flock.kind.protected.scale(boid.state).max);
+        if perspective > 0.0 {
+            -boid.pos.normalize() * perspective * self.turnback
+        } else {
+            Vec3A::ZERO
+        }
+    }
+
+    fn correction(&self, boid: &mut Boid) {
+        if boid.pos.length() + boid.flock.kind.size/2.0 > self.size {
+            boid.pos = boid.pos.normalize() * (self.size - boid.flock.kind.size/2.0)
+        }
+    }
 }
