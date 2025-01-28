@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use serde::{Deserialize, Serialize};
 use toml;
 use glam::Vec3A;
@@ -23,7 +25,7 @@ impl Config {
 
 #[derive(Debug, Deserialize, Serialize)]
 struct FlockBuilder {
-    pub flock: Flock,
+    pub flock: Arc<Flock>,
     pub boids: usize,
     pub state: Range,
     pub biases: Vec<Bias>
@@ -45,7 +47,7 @@ impl FlockBuilder {
                     break;
                 }
             }
-            let boid = Boid::new(&self.flock, self.state.random(), boid_bias, pos, vel);
+            let boid = Boid::new(self.flock.clone(), self.state.random(), boid_bias, pos, vel);
             boids.push(boid);
         }
         boids
@@ -60,15 +62,15 @@ struct Bias {
 }
 
 #[derive(Debug)]
-pub struct Context<'a> {
-    pub prev: Vec<Boid<'a>>,
-    pub next: Vec<Boid<'a>>,
+pub struct Context {
+    pub prev: Vec<Boid>,
+    pub next: Vec<Boid>,
     pub env_size: f32,
     pub turnback: f32,
 }
 
-impl<'a> Context<'a> {
-    pub fn new(config: &'a Config) -> Context {
+impl Context {
+    pub fn new(config: & Config) -> Context {
         let boids_number: usize = config.flocks.iter().map(|flock| flock.boids).sum();
         let mut vec: Vec<Boid> = Vec::with_capacity(boids_number);
         for flock_builder in config.flocks.iter() {

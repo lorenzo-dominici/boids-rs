@@ -72,7 +72,7 @@ impl Simulation {
         bar.finish();
     }
 
-    fn init(&self) -> Context {
+    fn init(& self) -> Context {
         Context::new(&self.config)
     }
 }

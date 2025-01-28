@@ -1,21 +1,23 @@
+
+
 use core::panic;
 
+use std::sync::Arc;
 use rayon::prelude::*;
-
 use serde::{Deserialize, Serialize};
 use glam::Vec3A;
 
-#[derive(Clone, Debug)]
-pub struct Boid<'a> {
-    pub flock: &'a Flock,
+#[derive(Debug, Clone)]
+pub struct Boid {
+    pub flock: Arc<Flock>,
     pub state: f32,
     pub bias: Bias,
     pub pos: Vec3A,
     pub vel: Vec3A,
 }
 
-impl Boid<'_> {
-    pub fn new(flock: &Flock, state: f32, bias: Bias, pos: Vec3A, vel: Vec3A) -> Boid {
+impl Boid {
+    pub fn new(flock: Arc<Flock>, state: f32, bias: Bias, pos: Vec3A, vel: Vec3A) -> Boid {
         Boid {
             flock,
             state,
@@ -33,7 +35,11 @@ impl Boid<'_> {
         self.flock.kind.protected.scale(self.state).contains(self.pos.distance(boid.pos))
     }
 
-    pub fn update<T: Environment>(&mut self, boids: &Vec<Boid>, environment: &T) {
+    pub fn update<'a, T, I>(&mut self, boids: &'a I, environment: &T)
+    where 
+        T: Environment,
+        I: IntoParallelRefIterator<'a, Item = &'a Boid>,
+    {
         let (sep_sum, sep_count, align_sum, align_count, coh_sum, coh_count) = boids.par_iter().filter(|boid| boid.pos != self.pos)
             .map(|boid| {
                 let role = self.flock.kind.compare(&boid.flock.kind);
@@ -145,7 +151,7 @@ impl Boid<'_> {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 pub struct Bias {
     pub weight: f32,
     pub pos: Vec3A,
