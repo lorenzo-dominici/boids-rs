@@ -1,6 +1,6 @@
 # config.toml
 
-iters = 5000
+iters = 1000
 env_size = 100.0
 turnback = 0.25
 layout = 16
@@ -26,7 +26,7 @@ flock.kind.protected.max = 30.0
 flock.kind.sep_weight = 0.05
 flock.kind.align_weight = 0.05
 flock.kind.coh_weight = 0.05
-boids = 3
+boids = 300
 state.min = 0.75
 state.max = 1.0
 biases = []
@@ -52,7 +52,7 @@ flock.kind.protected.max = 20.0
 flock.kind.sep_weight = 0.05
 flock.kind.align_weight = 0.05
 flock.kind.coh_weight = 0.05
-boids = 5
+boids = 500
 state.min = 0.5
 state.max = 1.0
 biases = []
@@ -78,7 +78,7 @@ flock.kind.protected.max = 10.0
 flock.kind.sep_weight = 0.05
 flock.kind.align_weight = 0.05
 flock.kind.coh_weight = 0.05
-boids = 20
+boids = 1200
 state.min = 0.25
 state.max = 1.0
 

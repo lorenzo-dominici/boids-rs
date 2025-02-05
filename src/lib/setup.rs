@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use toml;
 use glam::Vec3A;
 
-use crate::model::{self, Boid, Flock, Range};
+use crate::model::{self, aos, soa, Boid, Flock, Range};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Config {
@@ -63,20 +63,29 @@ struct Bias {
 
 #[derive(Debug)]
 pub struct Context {
-    pub prev: Vec<Boid>,
-    pub next: Vec<Boid>,
+    pub soa_prev: soa::Boids,
+    pub soa_next: soa::Boids,
+    pub aos_prev: aos::Boids,
+    pub aos_next: aos::Boids,
     pub env_size: f32,
     pub turnback: f32,
 }
 
 impl Context {
-    pub fn new(config: & Config) -> Context {
+    pub fn new(config: & Config) -> Self {
         let boids_number: usize = config.flocks.iter().map(|flock| flock.boids).sum();
         let mut vec: Vec<Boid> = Vec::with_capacity(boids_number);
         for flock_builder in config.flocks.iter() {
             let mut boids = flock_builder.build(config.env_size);
             vec.append(&mut boids);
         }
-        Context { prev: vec.clone(), next: vec, env_size: config.env_size, turnback: config.turnback }
+        Self { 
+            soa_prev: soa::Boids::new(&Vec::new()),
+            soa_next: soa::Boids::new(&vec),
+            aos_prev: aos::Boids::new(Vec::new()),
+            aos_next: aos::Boids::new(vec),
+            env_size: config.env_size,
+            turnback: config.turnback 
+        }
     }
 }
