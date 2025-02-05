@@ -1,19 +1,34 @@
+//! # Array of Structures (AoS) Boid Collection
+//! 
+//! This module contains the implementation of the `Boids` collection in the Array of Structures (AoS) format.
+
 use std::sync::Arc;
-
 use glam::Vec3A;
-
 use rayon::prelude::*;
-
 use super::*;
 
+/// A collection of boids (bird-oid objects) represented in an array of structures (AoS) format.
+/// 
+/// # Fields
+/// 
+/// - `boids`: A vector of `Boid` objects.
 #[derive(Debug, Clone)]
 pub struct Boids {
     boids: Vec<Boid>,
 }
 
 impl Boids {
-    pub fn new(boids: Vec<Boid>) -> Boids {
-        Boids { boids }
+    /// Creates a new `Boids` collection from a vector of `Boid` objects.
+    /// 
+    /// # Arguments
+    /// 
+    /// - `boids`: A vector of `Boid` objects.
+    /// 
+    /// # Returns
+    /// 
+    /// A new `Boids` collection.
+    pub fn new(boids: Vec<Boid>) -> Self {
+        Self { boids }
     }
 }
 

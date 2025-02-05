@@ -1,9 +1,22 @@
+//! # Struct of Arrays
+//! 
+//! This module contains the implementation of the Struct of Arrays (SoA) design pattern for the boids model.
+
 use std::sync::Arc;
 use glam::Vec3A;
 use rayon::prelude::*;
 
 use super::*;
 
+/// A struct representing a collection of boids stored in a Struct of Arrays (SoA) format.
+/// 
+/// # Fields
+/// 
+/// - `flock`: A vector of shared references to the flocks.
+/// - `state`: A vector of state values.
+/// - `bias`: A vector of biases.
+/// - `pos`: A vector of positions.
+/// - `vel`: A vector of velocities.
 #[derive(Debug, Clone)]
 pub struct Boids {
     pub flock: Vec<Arc<Flock>>,
@@ -14,22 +27,34 @@ pub struct Boids {
 }
 
 impl Boids {
+    /// Creates a new Boids instance from a vector of Boid.
+    /// 
+    /// # Arguments
+    /// 
+    /// - `boids`: A reference to a vector of `Boid`.
+    /// 
+    /// # Returns
+    /// 
+    /// A new `Boids` instance.
     pub fn new(boids: &Vec<Boid>) -> Self {
         let len = boids.len();
         
+        // Preallocate vectors with the capacity of the number of boids
         let mut flock = Vec::with_capacity(len);
         let mut state = Vec::with_capacity(len);
         let mut bias = Vec::with_capacity(len);
         let mut pos = Vec::with_capacity(len);
         let mut vel = Vec::with_capacity(len);
 
+        // Populate vectors using parallel iteration
         boids.par_iter().map(|boid| boid.flock.clone()).collect_into_vec(&mut flock);
         boids.par_iter().map(|boid| boid.state).collect_into_vec(&mut state);
         boids.par_iter().map(|boid| boid.bias).collect_into_vec(&mut bias);
         boids.par_iter().map(|boid| boid.pos).collect_into_vec(&mut pos);
         boids.par_iter().map(|boid| boid.vel).collect_into_vec(&mut vel);
 
-        Boids { flock, state, bias, pos, vel }
+        // Return the new Boids instance
+        Self { flock, state, bias, pos, vel }
     }
 }
 

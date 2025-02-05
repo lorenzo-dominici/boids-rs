@@ -1,12 +1,12 @@
 # Boids-rs
 
-Boids-rs is a Rust project that simulates boids behavior using CPU parallelization. The project also utilizes `rerun.io` as a data viewer to visualize the simulation.
+Boids-rs is a Rust project that simulates boids behavior using [`rayon`](https://docs.rs/rayon/latest/rayon/) CPU parallelization. The project also utilizes [`rerun.io`](https://rerun.io) as a data viewer to visualize the simulation.
 
 ## Features
 
 - Simulates boids behavior using Rust
-- Parallel computation for improved performance
-- Visualization of the simulation using `rerun.io`
+- Parallel computation for improved performance using [`rayon`](https://docs.rs/rayon/latest/rayon/)
+- Visualization of the simulation using [`rerun.io`](https://rerun.io)
 
 ## Installation
 
@@ -20,7 +20,7 @@ Boids-rs is a Rust project that simulates boids behavior using CPU parallelizati
 2. Install the required dependencies:
 
     ```sh
-    cargo build
+    cargo build --release
     ```
 
 ## Usage
@@ -33,17 +33,21 @@ cargo run
 
 ## Visualization
 
-To visualize the simulation, ensure you have `rerun.io` installed and configured. Follow the instructions on the [rerun.io website](https://rerun.io) to set it up.
+To visualize the simulation, ensure you have ***rerun viewer*** installed and configured. Follow the instructions on the [rerun.io website](https://rerun.io/docs/getting-started/installing-viewer#installing-the-viewer) to set it up. The ***rerun viewer*** version must be the same of the [`rerun`](https://docs.rs/rerun/latest/rerun/) crate used, specified in the [`Cargo.toml`](Cargo.toml).
 
 ## Contributing
 
-This project was originally created as a university assignment, but all contributions are welcome. Feel free to open issues, submit pull requests, or suggest new features.
+Contributions are welcome. Feel free to open issues, submit pull requests, or suggest new features.
 
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgements
+
+This project was created as midterm project for the course "Parallel Computing" at the University of Studies of Florence.
+
+## References
 
 - [Boids algorithm](https://vanhunteradams.com/Pico/Animal_Movement/Boids-algorithm.html)
 - [rerun.io](https://rerun.io)
