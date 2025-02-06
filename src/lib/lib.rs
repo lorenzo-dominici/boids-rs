@@ -130,9 +130,10 @@ impl Simulation {
         let mut aos_par_t: f64 = 0.0;
         let mut t: f64;
         let bar = ProgressBar::new(self.ctx.config.iters as u64).with_style(
-            ProgressStyle::with_template("[{elapsed_precise}] [{bar:40.cyan/blue}] {pos:>}/{len:} {eta:.green}").unwrap().progress_chars("=> ")
+            ProgressStyle::with_template("  [{elapsed_precise:.cyan/blue}] [{bar:25}] {pos:>}/{len:}: {eta:.green}").unwrap().progress_chars("=> ")
         );
-        for i in 0..self.ctx.config.iters {
+        bar.enable_steady_tick(std::time::Duration::from_millis(50));
+        for i in 1..=self.ctx.config.iters {
             self.rec.set_time_sequence("iteration", i);
 
             // Sequential SoA
@@ -164,6 +165,8 @@ impl Simulation {
 
             bar.inc(1);
         }
+        bar.set_message("Finished");
+        bar.set_style(ProgressStyle::with_template("{msg:>12.green.bold} simulation lasted [{elapsed_precise}]").unwrap());
         bar.finish();
 
         // Print the average times for each method

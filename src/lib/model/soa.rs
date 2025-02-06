@@ -17,6 +17,7 @@ use super::*;
 /// - `bias`: A vector of biases.
 /// - `pos`: A vector of positions.
 /// - `vel`: A vector of velocities.
+/// - `len`: The number of boids in the collection.
 #[derive(Debug, Clone)]
 pub struct Boids {
     pub flock: Vec<Arc<Flock>>,
@@ -24,6 +25,7 @@ pub struct Boids {
     pub bias: Vec<Bias>,
     pub pos: Vec<Vec3A>,
     pub vel: Vec<Vec3A>,
+    pub len: usize,
 }
 
 impl Boids {
@@ -47,14 +49,16 @@ impl Boids {
         let mut vel = Vec::with_capacity(len);
 
         // Populate vectors using parallel iteration
-        boids.par_iter().map(|boid| boid.flock.clone()).collect_into_vec(&mut flock);
-        boids.par_iter().map(|boid| boid.state).collect_into_vec(&mut state);
-        boids.par_iter().map(|boid| boid.bias).collect_into_vec(&mut bias);
-        boids.par_iter().map(|boid| boid.pos).collect_into_vec(&mut pos);
-        boids.par_iter().map(|boid| boid.vel).collect_into_vec(&mut vel);
+        for boid in boids {
+            flock.push(boid.flock.clone());
+            state.push(boid.state);
+            bias.push(boid.bias);
+            pos.push(boid.pos);
+            vel.push(boid.vel);
+        }
 
         // Return the new Boids instance
-        Self { flock, state, bias, pos, vel }
+        Self { flock, state, bias, pos, vel, len }
     }
 }
 
@@ -92,33 +96,10 @@ impl BoidCollection for Boids {
     }
 
     fn par_iter(&self) -> impl ParallelIterator<Item = (&Arc<Flock>, &f32, &Bias, &Vec3A, &Vec3A)> {
-        self.flock.par_iter()
-            .zip(self.state.par_iter())
-            .zip(self.bias.par_iter())
-            .zip(self.pos.par_iter())
-            .zip(self.vel.par_iter())
-            .map(|((((flock, state), bias), pos), vel)| (
-                flock,
-                state,
-                bias,
-                pos,
-                vel,
-            )
-        )
+        (&self.flock, &self.state, &self.bias, &self.pos, &self.vel).into_par_iter()
     }
 
     fn par_iter_mut(&mut self) -> impl ParallelIterator<Item = (&mut Arc<Flock>, &mut f32, &mut Bias, &mut Vec3A, &mut Vec3A)> + '_ {
-        self.flock.par_iter_mut()
-            .zip(self.state.par_iter_mut())
-            .zip(self.bias.par_iter_mut())
-            .zip(self.pos.par_iter_mut())
-            .zip(self.vel.par_iter_mut())
-            .map(|((((flock, state), bias), pos), vel)| (
-                flock,
-                state,
-                bias,
-                pos,
-                vel,
-            ))
+        (&mut self.flock, &mut self.state, &mut self.bias, &mut self.pos, &mut self.vel).into_par_iter()
     }
 }
