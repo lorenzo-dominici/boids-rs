@@ -11,21 +11,24 @@ keywords = ["boids", "simulation", "parallel", "rust"]
 categories = ["science", "simulation"]
 exclude = ["test-config.toml"]
 publish = false
-default-run = "main"
 
 [lib]
 name = "boids"
-path = "src/lib/lib.rs"
 
 [dependencies]
 glam = "0.29.2"
-indicatif = "0.17.11"
 rand = "0.8.5"
 rayon = "1.10.0"
-rerun = "0.21.0"
 serde = { version = "1.0.217", features = ["derive"] }
+
+[dev-dependencies]
+indicatif = "0.17.11"
+rerun = "0.21.0"
 time = "0.3.37"
 toml = "0.8.19"
 
 [profile.release]
-lto = true
+codegen-units = 1
+lto = "fat"
+opt-level = "s"
+strip = "symbols"
