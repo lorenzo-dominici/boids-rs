@@ -1,16 +1,14 @@
-# config.toml
-
-iters = 1000
+dim_multipliers = [10, 100, 1000]
 env_size = 100.0
 turnback = 0.25
 
 [[flocks]]
-flock.name = "Alpha"
-flock.kind.kind = "Hawk"
+flock.name = "F1"
+flock.kind.kind = "Alpha"
 flock.kind.size = 3.0
 flock.kind.color = [255, 0, 0]
-flock.kind.preys = ["Pigeon", "Hawk"]
-flock.kind.predators = ["Hawk"]
+flock.kind.preys = ["Alpha", "Beta"]
+flock.kind.predators = ["Alpha"]
 flock.kind.speed.min = 1.0
 flock.kind.speed.max = 2.0
 flock.kind.angular_speed.min = 0.0
@@ -25,18 +23,18 @@ flock.kind.protected.max = 30.0
 flock.kind.sep_weight = 0.05
 flock.kind.align_weight = 0.05
 flock.kind.coh_weight = 0.05
-boids = 300
+boids = 3
 state.min = 0.75
 state.max = 1.0
 biases = []
 
 [[flocks]]
-flock.name = "Beta"
-flock.kind.kind = "Pigeon"
+flock.name = "F2"
+flock.kind.kind = "Beta"
 flock.kind.size = 2.0
 flock.kind.color = [0, 255, 0]
-flock.kind.preys = ["Bug"]
-flock.kind.predators = ["Hawk"]
+flock.kind.preys = ["Gamma"]
+flock.kind.predators = ["Alpha"]
 flock.kind.speed.min = 1.0
 flock.kind.speed.max = 2.5
 flock.kind.angular_speed.min = 0.0
@@ -51,18 +49,18 @@ flock.kind.protected.max = 20.0
 flock.kind.sep_weight = 0.05
 flock.kind.align_weight = 0.05
 flock.kind.coh_weight = 0.05
-boids = 500
+boids = 5
 state.min = 0.5
 state.max = 1.0
 biases = []
 
 [[flocks]]
-flock.name = "Gamma"
-flock.kind.kind = "Bug"
+flock.name = "F3"
+flock.kind.kind = "Gamma"
 flock.kind.size = 1.0
 flock.kind.color = [0, 0, 255]
 flock.kind.preys = []
-flock.kind.predators = ["Pigeon"]
+flock.kind.predators = ["Beta"]
 flock.kind.speed.min = 1.0
 flock.kind.speed.max = 3.0
 flock.kind.angular_speed.min = 0.0
@@ -77,7 +75,7 @@ flock.kind.protected.max = 10.0
 flock.kind.sep_weight = 0.05
 flock.kind.align_weight = 0.05
 flock.kind.coh_weight = 0.05
-boids = 1200
+boids = 6
 state.min = 0.25
 state.max = 1.0
 
@@ -86,7 +84,32 @@ position = [0.0, 0.0, 0.0]
 weight_range = { min = 0.00025, max = 0.0005 }
 prob = 0.25
 
+[[flocks]]
+flock.name = "F4"
+flock.kind.kind = "Gamma"
+flock.kind.size = 1.0
+flock.kind.color = [0, 0, 255]
+flock.kind.preys = []
+flock.kind.predators = ["Beta"]
+flock.kind.speed.min = 1.0
+flock.kind.speed.max = 3.0
+flock.kind.angular_speed.min = 0.0
+flock.kind.angular_speed.max = 0.075
+flock.kind.acceleration.min = -0.2
+flock.kind.acceleration.max = 0.2
+flock.kind.momentum = 0.25
+flock.kind.vision.min = 0.0
+flock.kind.vision.max = 20.0
+flock.kind.protected.min = 0.0
+flock.kind.protected.max = 10.0
+flock.kind.sep_weight = 0.05
+flock.kind.align_weight = 0.05
+flock.kind.coh_weight = 0.05
+boids = 6
+state.min = 0.25
+state.max = 1.0
+
 [[flocks.biases]]
 position = [0.0, 0.0, 0.0]
-weight_range = { min = -0.0005, max = -0.00025 }
+weight_range = { min = 0.00025, max = 0.0005 }
 prob = 0.25

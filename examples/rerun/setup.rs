@@ -1,6 +1,6 @@
 //! This module contains the `Context` and `Config` structs that are used to setup the simulation.
 
-use boids::{aos, setup::FlockBuilder, soa, Boid};
+use boids::{aos, setup::FlockBuilder, soa};
 use serde::{Deserialize, Serialize};
 
 /// A struct representing the context of the simulation.
@@ -33,10 +33,10 @@ impl Context {
     /// A new `Context` instance.
     pub fn new(config: Config) -> Self {
         let boids_number: usize = config.flocks.iter().map(|flock| flock.boids).sum();
-        let mut vec: Vec<Boid> = Vec::with_capacity(boids_number);
+        let mut vec = Vec::with_capacity(boids_number);
         for flock_builder in config.flocks.iter() {
-            let mut boids = flock_builder.build(config.env_size);
-            vec.append(&mut boids);
+            let boids = flock_builder.build(config.env_size);
+            vec.extend(boids);
         }
         Self {
             soa_prev: soa::Boids::with_capacity(boids_number),
@@ -53,14 +53,12 @@ impl Context {
 /// # Fields
 ///
 /// - `iters`: The number of iterations to run the simulation.
-/// - `layout`: The layout of the environment.
 /// - `env_size`: The size of the environment.
 /// - `turnback`: The turnback factor.
 /// - `flocks`: A vector of `FlockBuilder` instances.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Config {
     pub iters: u32,
-    pub layout: u32,
     pub env_size: f32,
     pub turnback: f32,
     pub flocks: Vec<FlockBuilder>,

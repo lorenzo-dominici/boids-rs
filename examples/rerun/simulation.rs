@@ -102,7 +102,7 @@ impl Simulation {
             self.log(&self.ctx.aos_next, aos_par_t, t, i, "aos_par");
 
             // Decorate the environment
-            self.decorate(self.ctx.config.env_size);
+            self.decorate();
 
             bar.inc(1);
         }
@@ -173,12 +173,12 @@ impl Simulation {
     /// # Arguments
     ///
     /// - `env_size`: The size of the environment.
-    fn decorate(&self, env_size: f32) {
-        let l = self.ctx.config.layout;
+    fn decorate(&self) {
+        let l = 16;
         self.rec
             .log(
                 "/bounds",
-                &Ellipsoids3D::from_radii((0..l).map(|_| env_size))
+                &Ellipsoids3D::from_radii((0..l).map(|_| self.ctx.config.env_size))
                     .with_rotation_axis_angles((0..l).map(|i| {
                         (
                             (0.0, 0.0, 1.0),

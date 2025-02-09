@@ -15,6 +15,10 @@ publish = false
 [lib]
 name = "boids"
 
+[[bench]]
+name = "update"
+harness = false
+
 [dependencies]
 glam = "0.29.2"
 rand = "0.8.5"
@@ -22,6 +26,7 @@ rayon = "1.10.0"
 serde = { version = "1.0.217", features = ["derive"] }
 
 [dev-dependencies]
+criterion = "0.5.1"
 indicatif = "0.17.11"
 rerun = "0.21.0"
 time = "0.3.37"

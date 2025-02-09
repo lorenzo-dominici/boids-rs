@@ -32,7 +32,7 @@ impl Boids {
     ///
     /// # Arguments
     ///
-    /// - `boids`: A reference to a vector of `Boid`.
+    /// - `boids`: A reference to a slice of `Boid`.
     ///
     /// # Returns
     ///

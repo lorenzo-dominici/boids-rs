@@ -15,7 +15,7 @@ use std::sync::Arc;
 /// - `boids`: The number of boids in the flock.
 /// - `state`: The range of state values.
 /// - `biases`: A vector of `Bias` instances.
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct FlockBuilder {
     pub flock: Flock,
     pub boids: usize,
@@ -33,10 +33,9 @@ impl FlockBuilder {
     /// # Returns
     ///
     /// A vector of `Boid` instances.
-    pub fn build(&self, env_size: f32) -> Vec<Boid> {
-        let mut boids = Vec::with_capacity(self.boids);
+    pub fn build(&self, env_size: f32) -> impl Iterator<Item = Boid> + '_ {
         let flock = Arc::new(self.flock.clone());
-        for _ in 0..self.boids {
+        (0..self.boids).map(move |_| {
             // Generate random position and velocity for each boid
             let length = rand::random::<f32>() * env_size * 0.75;
             let versor = Vec3A::new(
@@ -67,11 +66,9 @@ impl FlockBuilder {
                     break;
                 }
             }
-            // Create a new boid and add it to the vector
-            let boid = Boid::new(flock.clone(), self.state.random(), boid_bias, pos, vel);
-            boids.push(boid);
-        }
-        boids
+            // Create a new boid
+            Boid::new(flock.clone(), self.state.random(), boid_bias, pos, vel)
+        })
     }
 }
 
@@ -82,7 +79,7 @@ impl FlockBuilder {
 /// - `position`: The position of the bias.
 /// - `weight_range`: The range of weight values.
 /// - `prob`: The probability of applying the bias.
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Bias {
     pub position: (f32, f32, f32),
     pub weight_range: Range,
