@@ -25,10 +25,10 @@ Boids-rs is a Rust project that simulates boids behavior using [`rayon`](https:/
 
 ## Usage
 
-Run the simulation:
+Run the simulation example:
 
 ```sh
-cargo run
+cargo run --release --example rerun -- examples/rerun/test-config.toml
 ```
 
 ## Visualization
