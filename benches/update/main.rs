@@ -5,40 +5,53 @@ use toml;
 
 fn bench_update(c: &mut Criterion) {
     let mut group = c.benchmark_group("update");
-    group.sample_size(1000).measurement_time(std::time::Duration::from_secs(60 * 30));
+    group.sample_size(100).measurement_time(std::time::Duration::from_secs(60 * 15));
 
-    let (env, boids) = generate_boids();
-    
+    let (threads, env, boids) = generate_boids();
+
     for (len, soa, aos) in boids {
+        for thread in &threads {
+            let params = format!("{}-on-{}", len, thread);
 
-        group.bench_with_input(BenchmarkId::new("seq-soa-update", len), &(&soa, &env), |b, (soa, env)| {
-            let mut boids = (*soa).clone();
-            b.iter(|| boids.update(soa, *env));
-        });
+            // Sequential benchmarks (no thread pool needed)
+            group.bench_with_input(BenchmarkId::new("seq-soa-update", &params), &(&soa, &env), |b, (soa, env)| {
+                let mut boids = (*soa).clone();
+                b.iter(|| boids.update(soa, *env));
+            });
 
-        group.bench_with_input(BenchmarkId::new("seq-aos-update", len), &(&aos, &env), |b, (aos, env)| {
-            let mut boids = (*aos).clone();
-            b.iter(|| boids.update(aos, *env));
-        });
+            group.bench_with_input(BenchmarkId::new("seq-aos-update", &params), &(&aos, &env), |b, (aos, env)| {
+                let mut boids = (*aos).clone();
+                b.iter(|| boids.update(aos, *env));
+            });
 
-        group.bench_with_input(BenchmarkId::new("par-soa-update", len), &(&soa, &env), |b, (soa, env)| {
-            let mut boids = (*soa).clone();
-            b.iter(|| boids.par_update(soa, *env));
-        });
+            // Parallel benchmarks using a local thread pool
+            let pool = rayon::ThreadPoolBuilder::new().num_threads(*thread).build().unwrap();
 
-        group.bench_with_input(BenchmarkId::new("par-aos-update", len), &(&aos, &env), |b, (aos, env)| {
-            let mut boids = (*aos).clone();
-            b.iter(|| boids.par_update(aos, *env));
-        });
+            group.bench_with_input(BenchmarkId::new("par-soa-update", &params), &(&soa, &env), |b, (soa, env)| {
+                let mut boids = (*soa).clone();
+                pool.install(|| {
+                    b.iter(|| boids.par_update(soa, *env));
+                });
+            });
+
+            group.bench_with_input(BenchmarkId::new("par-aos-update", &params), &(&aos, &env), |b, (aos, env)| {
+                let mut boids = (*aos).clone();
+                pool.install(|| {
+                    b.iter(|| boids.par_update(aos, *env));
+                });
+            });
+        }
     }
 
     group.finish();
 }
 
-fn generate_boids() -> (impl Environment, impl IntoIterator<Item=(usize, SoaBoids, AosBoids)>) {
+fn generate_boids() -> (Vec<usize>, impl Environment, impl IntoIterator<Item=(usize, SoaBoids, AosBoids)>) {
     let mut config = Config::load("benches/update/config.toml").unwrap();
 
-    (SphereEnv::new(config.env_size, config.turnback),
+    (
+        config.threads,
+        SphereEnv::new(config.env_size, config.turnback),
     config.dim_multipliers.into_iter().map(move |dim| {
         let mut vec = Vec::with_capacity(config.flocks.iter().map(|flock_builder| flock_builder.boids).sum());
 
@@ -55,6 +68,7 @@ fn generate_boids() -> (impl Environment, impl IntoIterator<Item=(usize, SoaBoid
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Config {
+    pub threads: Vec<usize>,
     pub dim_multipliers: Vec<usize>,
     pub env_size: f32,
     pub turnback: f32,

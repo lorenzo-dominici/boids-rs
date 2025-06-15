@@ -1,4 +1,5 @@
-dim_multipliers = [10, 100, 1000]
+threads = [1, 2, 4, 8, 16, 32, 64]
+dim_multipliers = [256, 512, 1024, 2048]
 env_size = 100.0
 turnback = 0.25
 
@@ -23,7 +24,7 @@ flock.kind.protected.max = 30.0
 flock.kind.sep_weight = 0.05
 flock.kind.align_weight = 0.05
 flock.kind.coh_weight = 0.05
-boids = 3
+boids = 2
 state.min = 0.75
 state.max = 1.0
 biases = []
@@ -49,7 +50,7 @@ flock.kind.protected.max = 20.0
 flock.kind.sep_weight = 0.05
 flock.kind.align_weight = 0.05
 flock.kind.coh_weight = 0.05
-boids = 5
+boids = 4
 state.min = 0.5
 state.max = 1.0
 biases = []
@@ -75,7 +76,7 @@ flock.kind.protected.max = 10.0
 flock.kind.sep_weight = 0.05
 flock.kind.align_weight = 0.05
 flock.kind.coh_weight = 0.05
-boids = 6
+boids = 5
 state.min = 0.25
 state.max = 1.0
 
@@ -105,7 +106,7 @@ flock.kind.protected.max = 10.0
 flock.kind.sep_weight = 0.05
 flock.kind.align_weight = 0.05
 flock.kind.coh_weight = 0.05
-boids = 6
+boids = 5
 state.min = 0.25
 state.max = 1.0
 
