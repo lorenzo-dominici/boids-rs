@@ -23,12 +23,12 @@ harness = false
 glam = "0.29.2"
 rand = "0.8.5"
 rayon = "1.10.0"
-serde = { version = "1.0.217", features = ["derive"] }
+serde = { version = "1.0.217", default-features = false, features = ["derive", "alloc"] }
 
 [dev-dependencies]
 criterion = "0.5.1"
 indicatif = "0.17.11"
-rerun = "0.21.0"
+rerun = { version = "0.21.0", default-features = false, features = ["log", "sdk", "web_viewer"] }
 time = "0.3.37"
 toml = "0.8.19"
 
