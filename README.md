@@ -2,6 +2,12 @@
 
 Boids-rs is a Rust project that simulates [boids](https://en.wikipedia.org/wiki/Boids) behavior using [`rayon`](https://docs.rs/rayon/latest/rayon/) CPU parallelization. The project supports arbitrary 3D mesh environments (OBJ/STL) with Artificial Potential Field (APF) repulsion and uses [`rerun.io`](https://rerun.io) for real-time visualization.
 
+## Demo
+
+![Boids simulation in rerun viewer](media/rerun_boids.gif)
+
+The simulation is visualized using [rerun.io](https://rerun.io), which provides an interactive 3D viewer with real-time metrics and logging. Boids are displayed as arrows showing their position and velocity, while the mesh environment is rendered as a wireframe.
+
 ## Features
 
 - **Boids Simulation**: Classic flocking behavior with separation, alignment, and cohesion

@@ -2,11 +2,11 @@
 # Central sphere (100 units wide) connected to 8 outer spheres (40 units wide)
 # Outer sphere centers are 100 units from central sphere center at 45° intervals
 
-iters = 3000
+iters = 1000
 
 # Execution mode: "all", "aos_seq", "soa_seq", "aos_par", "soa_par"
 # Default is "all" if not specified
-execution = "soa_par"
+execution = "all"
 
 # Mesh environment - Complex spheres
 [environment]
