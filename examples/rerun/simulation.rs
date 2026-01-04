@@ -1,9 +1,9 @@
 //! The simulation module.
 
-use super::setup::{Config, Context};
-use boids::{BoidCollection, SphereEnv};
+use super::setup::{Config, Context, ExecutionMode};
+use boids::BoidCollection;
 use indicatif::{ProgressBar, ProgressStyle};
-use rerun::{Arrows3D, Ellipsoids3D, RecordingStream, Scalar, TextLog};
+use rerun::{Arrows3D, RecordingStream, Scalar, TextLog};
 
 /// A struct representing the simulation.
 ///
@@ -50,7 +50,12 @@ impl Simulation {
     ///
     /// This method runs the simulation for the specified number of iterations and logs the data to the recording stream.
     pub fn run(&mut self) {
-        let env = SphereEnv::new(self.ctx.config.env_size, self.ctx.config.turnback);
+        // Log environment info
+        self.log_environment_info();
+        
+        // Log static environment geometry (mesh if available)
+        self.log_environment_geometry();
+
         self.rec
             .log("/logs", &TextLog::new("Simulation started"))
             .unwrap();
@@ -74,35 +79,44 @@ impl Simulation {
             .progress_chars("=> "),
         );
         bar.enable_steady_tick(std::time::Duration::from_millis(50));
+        
+        let env = &self.ctx.environment;
+        let mode = self.ctx.config.execution;
+        
         for i in 1..=self.ctx.config.iters {
             self.rec.set_time_sequence("iteration", i);
 
             // Sequential SoA
-            self.ctx.soa_prev.clone_from(&self.ctx.soa_next);
-            t = time(|| self.ctx.soa_next.update(&self.ctx.soa_prev, &env));
-            soa_t += t;
-            self.log(&self.ctx.soa_next, soa_t, t, i, "soa_seq");
+            if mode == ExecutionMode::All || mode == ExecutionMode::SoaSeq {
+                self.ctx.soa_seq_prev.clone_from(&self.ctx.soa_seq_next);
+                t = time(|| self.ctx.soa_seq_next.update(&self.ctx.soa_seq_prev, env.as_ref()));
+                soa_t += t;
+                self.log(&self.ctx.soa_seq_next, soa_t, t, i, "soa_seq");
+            }
 
             // Sequential AoS
-            self.ctx.aos_prev.clone_from(&self.ctx.aos_next);
-            t = time(|| self.ctx.aos_next.update(&self.ctx.aos_prev, &env));
-            aos_t += t;
-            self.log(&self.ctx.aos_next, aos_t, t, i, "aos_seq");
+            if mode == ExecutionMode::All || mode == ExecutionMode::AosSeq {
+                self.ctx.aos_seq_prev.clone_from(&self.ctx.aos_seq_next);
+                t = time(|| self.ctx.aos_seq_next.update(&self.ctx.aos_seq_prev, env.as_ref()));
+                aos_t += t;
+                self.log(&self.ctx.aos_seq_next, aos_t, t, i, "aos_seq");
+            }
 
             // Parallel SoA
-            self.ctx.soa_next.clone_from(&self.ctx.soa_prev);
-            t = time(|| self.ctx.soa_next.par_update(&self.ctx.soa_prev, &env));
-            soa_par_t += t;
-            self.log(&self.ctx.soa_next, soa_par_t, t, i, "soa_par");
+            if mode == ExecutionMode::All || mode == ExecutionMode::SoaPar {
+                self.ctx.soa_par_prev.clone_from(&self.ctx.soa_par_next);
+                t = time(|| self.ctx.soa_par_next.par_update(&self.ctx.soa_par_prev, env.as_ref()));
+                soa_par_t += t;
+                self.log(&self.ctx.soa_par_next, soa_par_t, t, i, "soa_par");
+            }
 
             // Parallel AoS
-            self.ctx.aos_next.clone_from(&self.ctx.aos_prev);
-            t = time(|| self.ctx.aos_next.par_update(&self.ctx.aos_prev, &env));
-            aos_par_t += t;
-            self.log(&self.ctx.aos_next, aos_par_t, t, i, "aos_par");
-
-            // Decorate the environment
-            self.decorate();
+            if mode == ExecutionMode::All || mode == ExecutionMode::AosPar {
+                self.ctx.aos_par_prev.clone_from(&self.ctx.aos_par_next);
+                t = time(|| self.ctx.aos_par_next.par_update(&self.ctx.aos_par_prev, env.as_ref()));
+                aos_par_t += t;
+                self.log(&self.ctx.aos_par_next, aos_par_t, t, i, "aos_par");
+            }
 
             bar.inc(1);
         }
@@ -114,14 +128,68 @@ impl Simulation {
             .unwrap(),
         );
         bar.finish();
+    }
 
-        // Print the average times for each method
-        println!("======= SEQUENTIAL =======");
-        println!("SoA: {:?}", soa_t / self.ctx.config.iters as f64);
-        println!("AoS: {:?}", aos_t / self.ctx.config.iters as f64);
-        println!("======== PARALLEL ========");
-        println!("SoA: {:?}", soa_par_t / self.ctx.config.iters as f64);
-        println!("AoS: {:?}", aos_par_t / self.ctx.config.iters as f64);
+    /// Log environment information at startup
+    fn log_environment_info(&self) {
+        let env = &self.ctx.config.environment;
+        let mesh_env = &self.ctx.mesh_env;
+        let info = format!(
+            "Environment: Mesh\n  Path: {}\n  Triangles: {}\n  Inverted: {}",
+            env.path,
+            mesh_env.mesh().triangle_count(),
+            env.inverted
+        );
+        self.rec.log("/logs", &TextLog::new(info)).unwrap();
+    }
+
+    /// Log static environment geometry (mesh visualization)
+    fn log_environment_geometry(&self) {
+        let mesh_env = &self.ctx.mesh_env;
+        let triangles = mesh_env.mesh().triangles();
+
+        // Build wireframe edges for see-through visualization
+        let mut edge_positions: Vec<[f32; 3]> = Vec::with_capacity(triangles.len() * 6);
+        
+        for tri in triangles.iter() {
+            // Edge 1: v0 -> v1
+            edge_positions.push([tri.v0.x, tri.v0.y, tri.v0.z]);
+            edge_positions.push([tri.v1.x, tri.v1.y, tri.v1.z]);
+            // Edge 2: v1 -> v2
+            edge_positions.push([tri.v1.x, tri.v1.y, tri.v1.z]);
+            edge_positions.push([tri.v2.x, tri.v2.y, tri.v2.z]);
+            // Edge 3: v2 -> v0
+            edge_positions.push([tri.v2.x, tri.v2.y, tri.v2.z]);
+            edge_positions.push([tri.v0.x, tri.v0.y, tri.v0.z]);
+        }
+
+        // Log mesh as wireframe (line segments)
+        self.rec
+            .log_static(
+                "/environment/mesh",
+                &rerun::LineStrips3D::new(
+                    edge_positions.chunks(2).map(|pair| vec![pair[0], pair[1]])
+                )
+                .with_colors([rerun::Color::from_unmultiplied_rgba(100, 140, 180, 100)])
+                .with_radii([0.05]),
+            )
+            .unwrap();
+
+        // Log bounding box
+        let bounds = mesh_env.mesh().bounds();
+        let center = bounds.center();
+        let size = bounds.size();
+
+        self.rec
+            .log_static(
+                "/environment/bounds",
+                &rerun::Boxes3D::from_centers_and_sizes(
+                    [[center.x, center.y, center.z]],
+                    [[size.x, size.y, size.z]],
+                )
+                .with_colors([rerun::Color::from_unmultiplied_rgba(80, 80, 80, 60)]),
+            )
+            .unwrap();
     }
 
     /// Logs the boids data and other measures to the recording stream.
@@ -164,29 +232,6 @@ impl Simulation {
                         .iter()
                         .map(|(flock, _, _, _, _)| flock.kind.size / 2.0),
                 ),
-            )
-            .unwrap();
-    }
-
-    /// Decorates the environment with bounds.
-    ///
-    /// # Arguments
-    ///
-    /// - `env_size`: The size of the environment.
-    fn decorate(&self) {
-        let l = 16;
-        self.rec
-            .log(
-                "/bounds",
-                &Ellipsoids3D::from_radii((0..l).map(|_| self.ctx.config.env_size))
-                    .with_rotation_axis_angles((0..l).map(|i| {
-                        (
-                            (0.0, 0.0, 1.0),
-                            i as f32 * std::f32::consts::PI / (l / 2) as f32,
-                        )
-                    }))
-                    .with_line_radii((0..l).map(|_| 0.25))
-                    .with_colors((0..=l).map(|_| (129, 129, 129, 60))),
             )
             .unwrap();
     }

@@ -1,0 +1,366 @@
+# Complex Arena Configuration
+# Central sphere (100 units wide) connected to 8 outer spheres (40 units wide)
+# Outer sphere centers are 100 units from central sphere center at 45° intervals
+
+iters = 3000
+
+# Execution mode: "all", "aos_seq", "soa_seq", "aos_par", "soa_par"
+# Default is "all" if not specified
+execution = "soa_par"
+
+# Mesh environment - Complex spheres
+[environment]
+path = "examples/rerun/assets/complex.obj"
+inverted = true
+scale = 3000.0
+repulsion_strength = 1.5
+falloff_exponent = 2.0
+weight_exponent = 1.0
+size_margin = 1.0
+max_triangles = 16  # Max triangles to consider for repulsion (8-32 typical)
+steering_strength = 0.6  # Turnover effect strength (0.3-0.7 typical)
+
+# ============================================
+# FLOCK 1: Eagles (Apex Predators) - East sphere (0°)
+# Position: (100, 0, 0)
+# ============================================
+[[flocks]]
+flock.name = "Eagles"
+flock.kind.kind = "Eagle"
+flock.kind.size = 4.0
+flock.kind.color = [255, 165, 0]
+flock.kind.preys = ["Hawk", "Falcon", "Pigeon"]
+flock.kind.predators = []
+flock.kind.speed.min = 1.8
+flock.kind.speed.max = 3.5
+flock.kind.angular_speed.min = 0.0
+flock.kind.angular_speed.max = 0.05
+flock.kind.acceleration.min = -0.12
+flock.kind.acceleration.max = 0.12
+flock.kind.momentum = 0.8
+flock.kind.vision.min = 0.0
+flock.kind.vision.max = 80.0
+flock.kind.protected.min = 0.0
+flock.kind.protected.max = 40.0
+flock.kind.sep_weight = 0.04
+flock.kind.align_weight = 0.01
+flock.kind.coh_weight = 0.04
+boids = 5
+state.min = 0.9
+state.max = 1.0
+
+[[flocks.spawns]]
+position = [0.1, 0.0, 0.0]
+radius = 0.01
+
+[[flocks.biases]]
+position = [0.1, 0.0, 0.0]
+weight_range = { min = 0.25, max = 0.4 }
+prob = 0.3
+
+[[flocks.biases]]
+position = [0.0, 0.0, 0.0]
+weight_range = { min = 0.0001, max = 0.0003 }
+prob = 0.4
+
+# ============================================
+# FLOCK 2: Hawks (Large Predators) - NE sphere (45°)
+# Position: (70.71, 0, 70.71)
+# ============================================
+[[flocks]]
+flock.name = "Hawks"
+flock.kind.kind = "Hawk"
+flock.kind.size = 3.5
+flock.kind.color = [255, 50, 50]
+flock.kind.preys = ["Falcon", "Pigeon", "Sparrow"]
+flock.kind.predators = ["Eagle"]
+flock.kind.speed.min = 2.0
+flock.kind.speed.max = 4.0
+flock.kind.angular_speed.min = 0.0
+flock.kind.angular_speed.max = 0.05
+flock.kind.acceleration.min = -0.15
+flock.kind.acceleration.max = 0.15
+flock.kind.momentum = 0.75
+flock.kind.vision.min = 0.0
+flock.kind.vision.max = 70.0
+flock.kind.protected.min = 0.0
+flock.kind.protected.max = 35.0
+flock.kind.sep_weight = 0.03
+flock.kind.align_weight = 0.04
+flock.kind.coh_weight = 0.03
+boids = 8
+state.min = 0.85
+state.max = 1.0
+
+[[flocks.spawns]]
+position = [0.07071, 0.07071, 0.0]
+radius = 0.01
+
+[[flocks.biases]]
+position = [0.07071, 0.07071, 0.0]
+weight_range = { min = 0.25, max = 0.4 }
+prob = 0.45
+
+[[flocks.biases]]
+position = [0.0, 0.0, 0.0]
+weight_range = { min = 0.0002, max = 0.0005 }
+prob = 0.35
+
+# ============================================
+# FLOCK 3: Falcons (Medium Predators) - North sphere (90°)
+# Position: (0, 0, 100)
+# ============================================
+[[flocks]]
+flock.name = "Falcons"
+flock.kind.kind = "Falcon"
+flock.kind.size = 2.8
+flock.kind.color = [0, 255, 255]
+flock.kind.preys = ["Pigeon", "Sparrow", "Starling"]
+flock.kind.predators = ["Eagle", "Hawk"]
+flock.kind.speed.min = 2.5
+flock.kind.speed.max = 5.0
+flock.kind.angular_speed.min = 0.0
+flock.kind.angular_speed.max = 0.05
+flock.kind.acceleration.min = -0.2
+flock.kind.acceleration.max = 0.2
+flock.kind.momentum = 0.65
+flock.kind.vision.min = 0.0
+flock.kind.vision.max = 65.0
+flock.kind.protected.min = 0.0
+flock.kind.protected.max = 30.0
+flock.kind.sep_weight = 0.05
+flock.kind.align_weight = 0.02
+flock.kind.coh_weight = 0.03
+boids = 10
+state.min = 0.8
+state.max = 1.0
+
+[[flocks.spawns]]
+position = [0.0, 0.1, 0.0]
+radius = 0.01
+
+[[flocks.biases]]
+position = [0.0, 0.1, 0.0]
+weight_range = { min = 0.25, max = 0.4 }
+prob = 0.45
+
+[[flocks.biases]]
+position = [0.0, 0.0, 0.0]
+weight_range = { min = 0.0002, max = 0.0004 }
+prob = 0.35
+
+# ============================================
+# FLOCK 4: Owls (Night Predators) - NW sphere (135°)
+# Position: (-70.71, 0, 70.71)
+# ============================================
+[[flocks]]
+flock.name = "Owls"
+flock.kind.kind = "Owl"
+flock.kind.size = 3.0
+flock.kind.color = [255, 255, 0]
+flock.kind.preys = ["Sparrow", "Starling", "Bug"]
+flock.kind.predators = []
+flock.kind.speed.min = 1.5
+flock.kind.speed.max = 3.0
+flock.kind.angular_speed.min = 0.0
+flock.kind.angular_speed.max = 0.05
+flock.kind.acceleration.min = -0.12
+flock.kind.acceleration.max = 0.12
+flock.kind.momentum = 0.7
+flock.kind.vision.min = 0.0
+flock.kind.vision.max = 75.0
+flock.kind.protected.min = 0.0
+flock.kind.protected.max = 32.0
+flock.kind.sep_weight = 0.04
+flock.kind.align_weight = 0.03
+flock.kind.coh_weight = 0.01
+boids = 7
+state.min = 0.8
+state.max = 1.0
+
+[[flocks.spawns]]
+position = [-0.07071, 0.07071, 0.0]
+radius = 0.01
+
+[[flocks.biases]]
+position = [-0.07071, 0.07071, 0.0]
+weight_range = { min = 0.3, max = 0.4 }
+prob = 0.55
+
+[[flocks.biases]]
+position = [0.0, 0.0, 0.0]
+weight_range = { min = 0.0001, max = 0.0003 }
+prob = 0.25
+
+# ============================================
+# FLOCK 5: Pigeons (Large Prey) - West sphere (180°)
+# Position: (-100, 0, 0)
+# ============================================
+[[flocks]]
+flock.name = "Pigeons"
+flock.kind.kind = "Pigeon"
+flock.kind.size = 2.2
+flock.kind.color = [255, 0, 255]
+flock.kind.preys = ["Bug"]
+flock.kind.predators = ["Eagle", "Hawk", "Falcon"]
+flock.kind.speed.min = 1.8
+flock.kind.speed.max = 3.5
+flock.kind.angular_speed.min = 0.0
+flock.kind.angular_speed.max = 0.065
+flock.kind.acceleration.min = -0.18
+flock.kind.acceleration.max = 0.18
+flock.kind.momentum = 0.55
+flock.kind.vision.min = 0.0
+flock.kind.vision.max = 50.0
+flock.kind.protected.min = 0.0
+flock.kind.protected.max = 25.0
+flock.kind.sep_weight = 0.07
+flock.kind.align_weight = 0.06
+flock.kind.coh_weight = 0.06
+boids = 20
+state.min = 0.6
+state.max = 1.0
+
+[[flocks.spawns]]
+position = [-0.1, 0.0, 0.0]
+radius = 0.01
+
+[[flocks.biases]]
+position = [-0.1, 0.0, 0.0]
+weight_range = { min = 0.25, max = 0.4 }
+prob = 0.6
+
+[[flocks.biases]]
+position = [0.0, 0.0, 0.0]
+weight_range = { min = 0.0001, max = 0.0003 }
+prob = 0.2
+
+# ============================================
+# FLOCK 6: Sparrows (Medium Prey) - SW sphere (225°)
+# Position: (-70.71, 0, -70.71)
+# ============================================
+[[flocks]]
+flock.name = "Sparrows"
+flock.kind.kind = "Sparrow"
+flock.kind.size = 1.5
+flock.kind.color = [255, 150, 200]
+flock.kind.preys = ["Bug"]
+flock.kind.predators = ["Hawk", "Falcon", "Owl"]
+flock.kind.speed.min = 2.0
+flock.kind.speed.max = 4.0
+flock.kind.angular_speed.min = 0.0
+flock.kind.angular_speed.max = 0.06
+flock.kind.acceleration.min = -0.22
+flock.kind.acceleration.max = 0.22
+flock.kind.momentum = 0.45
+flock.kind.vision.min = 0.0
+flock.kind.vision.max = 40.0
+flock.kind.protected.min = 0.0
+flock.kind.protected.max = 18.0
+flock.kind.sep_weight = 0.06
+flock.kind.align_weight = 0.06
+flock.kind.coh_weight = 0.06
+boids = 30
+state.min = 0.5
+state.max = 1.0
+
+[[flocks.spawns]]
+position = [-0.07071, -0.07071, 0.0]
+radius = 0.01
+
+[[flocks.biases]]
+position = [-0.07071, -0.07071, 0.0]
+weight_range = { min = 0.25, max = 0.4 }
+prob = 0.65
+
+[[flocks.biases]]
+position = [0.0, 0.0, 0.0]
+weight_range = { min = 0.0001, max = 0.0002 }
+prob = 0.15
+
+# ============================================
+# FLOCK 7: Starlings (Small Prey) - South sphere (270°)
+# Position: (0, 0, -100)
+# ============================================
+[[flocks]]
+flock.name = "Starlings"
+flock.kind.kind = "Starling"
+flock.kind.size = 1.3
+flock.kind.color = [255, 255, 255]
+flock.kind.preys = ["Bug"]
+flock.kind.predators = ["Falcon", "Owl"]
+flock.kind.speed.min = 2.2
+flock.kind.speed.max = 4.5
+flock.kind.angular_speed.min = 0.0
+flock.kind.angular_speed.max = 0.07
+flock.kind.acceleration.min = -0.25
+flock.kind.acceleration.max = 0.25
+flock.kind.momentum = 0.4
+flock.kind.vision.min = 0.0
+flock.kind.vision.max = 35.0
+flock.kind.protected.min = 0.0
+flock.kind.protected.max = 15.0
+flock.kind.sep_weight = 0.05
+flock.kind.align_weight = 0.07
+flock.kind.coh_weight = 0.08
+boids = 35
+state.min = 0.45
+state.max = 1.0
+
+[[flocks.spawns]]
+position = [0.0, -0.1, 0.0]
+radius = 0.01
+
+[[flocks.biases]]
+position = [0.0, -0.1, 0.0]
+weight_range = { min = 0.25, max = 0.35 }
+prob = 0.7
+
+[[flocks.biases]]
+position = [0.0, 0.0, 0.0]
+weight_range = { min = 0.00005, max = 0.00015 }
+prob = 0.1
+
+# ============================================
+# FLOCK 8: Bugs (Base Prey) - SE sphere (315°)
+# Position: (70.71, 0, -70.71)
+# ============================================
+[[flocks]]
+flock.name = "Bugs"
+flock.kind.kind = "Bug"
+flock.kind.size = 0.8
+flock.kind.color = [0, 255, 0]
+flock.kind.preys = []
+flock.kind.predators = ["Owl", "Pigeon", "Sparrow", "Starling"]
+flock.kind.speed.min = 2.5
+flock.kind.speed.max = 5.0
+flock.kind.angular_speed.min = 0.0
+flock.kind.angular_speed.max = 0.1
+flock.kind.acceleration.min = -0.3
+flock.kind.acceleration.max = 0.3
+flock.kind.momentum = 0.25
+flock.kind.vision.min = 0.0
+flock.kind.vision.max = 25.0
+flock.kind.protected.min = 0.0
+flock.kind.protected.max = 10.0
+flock.kind.sep_weight = 0.06
+flock.kind.align_weight = 0.03
+flock.kind.coh_weight = 0.05
+boids = 50
+state.min = 0.3
+state.max = 1.0
+
+[[flocks.spawns]]
+position = [0.07071, -0.07071, 0.0]
+radius = 0.01
+
+[[flocks.biases]]
+position = [0.07071, -0.07071, 0.0]
+weight_range = { min = 0.25, max = 0.375 }
+prob = 0.8
+
+[[flocks.biases]]
+position = [0.0, 0.0, 0.0]
+weight_range = { min = 0.00005, max = 0.0001 }
+prob = 0.1
+

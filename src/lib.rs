@@ -5,6 +5,7 @@
 //! * `aos` - Array of structures implementation
 //! * `soa` - Struct of arrays implementation
 //! * `setup` - Setup functions for the boids model
+//! * `environment` - 3D mesh-based environment definitions
 //!
 //! ## Usage
 //!
@@ -21,9 +22,15 @@
 //!
 //! ```rust
 //!
-//! use boids::{aos, soa, setup};
+//! use boids::{aos, soa, setup, environment};
 //!
 //! ```
+//!
+//! ## Environment Types
+//!
+//! The library supports mesh-based environments:
+//!
+//! - `MeshEnvironment` - Arbitrary 3D geometry from OBJ/STL files
 //!
 //! ## License
 //!
@@ -43,8 +50,16 @@
 //! * [rerun.io](https://rerun.io)
 
 pub mod aos;
+pub mod environment;
 pub mod setup;
 pub mod soa;
+
+// Re-export environment types for convenience
+pub use environment::{
+    Aabb, LoadError, MeshEnvironment, MeshSdf, RepulsionConfig,
+    SignedDistance, Triangle,
+};
+pub use environment::{center_mesh, load_mesh, load_obj, load_stl, transform_triangles};
 
 use glam::Vec3A;
 use rayon::prelude::*;
@@ -196,7 +211,7 @@ pub trait BoidCollection: Send + Sync {
     /// # Panics
     ///
     /// Panics if the `Role` comparison is invalid
-    fn update<E: Environment>(&mut self, boids: &Self, environment: &E) {
+    fn update<E: Environment + ?Sized>(&mut self, boids: &Self, environment: &E) {
         self.iter_mut()
             .for_each(|(s_flock, s_state, s_bias, s_pos, s_vel)| {
                 // Calculate separation, alignment, and cohesion vectors
@@ -300,7 +315,7 @@ pub trait BoidCollection: Send + Sync {
     /// # Panics
     ///
     /// Panics if the `Role` comparison is invalid
-    fn par_update<E: Environment>(&mut self, boids: &Self, environment: &E) {
+    fn par_update<E: Environment + ?Sized>(&mut self, boids: &Self, environment: &E) {
         self.par_iter_mut()
             .for_each(|(s_flock, s_state, s_bias, s_pos, s_vel)| {
                 // Calculate separation, alignment, and cohesion vectors in parallel
@@ -481,7 +496,7 @@ fn aggregate_behaviors(
 /// # Panics
 ///
 /// Panics if the `Role` comparison is invalid
-fn apply_behavior_and_constraints<E: Environment>(
+fn apply_behavior_and_constraints<E: Environment + ?Sized>(
     environment: &E,
     s_flock: &mut Arc<Flock>,
     s_state: &mut f32,
@@ -572,49 +587,6 @@ pub trait Environment: Send + Sync {
     ///
     /// * `boid` - A mutable reference to the boid to correct.
     fn correction(&self, boid: BoidRefMut);
-}
-
-/// Structure representing a spherical environment
-#[derive(Clone, Debug)]
-pub struct SphereEnv {
-    pub size: f32,     // Size of the sphere
-    pub turnback: f32, // Factor to turn back the boid when it get close to the edge
-}
-
-impl SphereEnv {
-    /// Constructor to create a new spherical environment
-    ///
-    /// # Arguments
-    ///
-    /// * `size` - A floating-point value representing the size of the sphere.
-    /// * `turnback` - A floating-point value representing the factor to turn back the boid when it gets close to the edge.
-    ///
-    /// # Returns
-    ///
-    /// A `SphereEnv` struct with the given size and turnback factor.
-    pub fn new(size: f32, turnback: f32) -> Self {
-        Self { size, turnback }
-    }
-}
-
-impl Environment for SphereEnv {
-    fn repulsion(&self, boid: BoidRef) -> Vec3A {
-        let (flock, state, _, pos, _) = boid;
-        let perspective = (pos.length() + flock.kind.vision.scale(*state).max - self.size)
-            / (flock.kind.vision.scale(*state).max / flock.kind.protected.scale(*state).max);
-        if perspective > 0.0 {
-            -pos.normalize() * perspective * self.turnback
-        } else {
-            Vec3A::ZERO
-        }
-    }
-
-    fn correction(&self, boid: BoidRefMut) {
-        let (flock, _, _, pos, _) = boid;
-        if pos.length() + flock.kind.size / 2.0 > self.size {
-            *pos = pos.normalize() * (self.size - flock.kind.size / 2.0)
-        }
-    }
 }
 
 /// Structure representing a bias affecting the boid's movement

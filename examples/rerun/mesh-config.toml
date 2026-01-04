@@ -1,0 +1,109 @@
+# =============================================================================
+# Mesh Configuration - Predator-Prey in Mesh Environment
+# =============================================================================
+# Demonstrates boids simulation with mesh-based environment boundaries.
+# Features a predator-prey relationship between two flock types inside a room.
+# =============================================================================
+
+iters = 5000
+
+# Execution mode: "all", "aos_seq", "soa_seq", "aos_par", "soa_par"
+# - all: Run all four execution modes for comparison
+# - aos_seq/soa_seq: Single-threaded execution
+# - aos_par/soa_par: Multi-threaded execution (recommended for performance)
+execution = "soa_par"
+
+# =============================================================================
+# Mesh Environment Configuration
+# =============================================================================
+# The environment defines boundaries using a 3D mesh. Boids interact with the
+# mesh using Artificial Potential Fields (APF) for smooth collision avoidance.
+# =============================================================================
+[environment]
+path = "examples/rerun/assets/room.obj"  # Path to mesh file (OBJ or STL)
+inverted = true                          # true = boids stay INSIDE mesh
+scale = 3.0                              # Scale factor applied to mesh
+
+# -----------------------------------------------------------------------------
+# APF (Artificial Potential Field) Repulsion Parameters
+# -----------------------------------------------------------------------------
+# The APF system considers all triangles within the boid's vision range and
+# combines their contributions weighted by distance. This creates smooth
+# behavior near edges, corners, and complex geometry.
+# -----------------------------------------------------------------------------
+repulsion_strength = 2.0                 # Base strength of repulsion force
+falloff_exponent = 3.0                   # Distance falloff (higher = steeper near surface)
+weight_exponent = 1.5                    # Triangle weighting (higher = closer triangles dominate)
+size_margin = 0.5                        # Safety margin multiplier for boid size
+max_triangles = 16                       # Max triangles to consider (8-32 typical)
+steering_strength = 0.5                  # Turnover effect strength (0.3-0.7 typical)
+
+# =============================================================================
+# Flock 1: Alpha (Predators)
+# =============================================================================
+# Large, slower predators that hunt the Beta flock.
+# =============================================================================
+[[flocks]]
+flock.name = "Alpha"
+flock.kind.kind = "Predator"
+flock.kind.size = 3.0
+flock.kind.color = [100, 200, 255]
+flock.kind.preys = ["Prey"]
+flock.kind.predators = []
+flock.kind.speed.min = 1.0
+flock.kind.speed.max = 2.0
+flock.kind.angular_speed.min = 0.0
+flock.kind.angular_speed.max = 0.1
+flock.kind.acceleration.min = -0.15
+flock.kind.acceleration.max = 0.15
+flock.kind.momentum = 0.4
+flock.kind.vision.min = 0.0
+flock.kind.vision.max = 45.0
+flock.kind.protected.min = 0.0
+flock.kind.protected.max = 15.0
+flock.kind.sep_weight = 0.1
+flock.kind.align_weight = 0.07
+flock.kind.coh_weight = 0.01
+boids = 5
+state.min = 0.8
+state.max = 1.0
+biases = []
+
+[[flocks.spawns]]
+position = [-10.0, 0.0, 0.0]
+radius = 5.0
+
+# =============================================================================
+# Flock 2: Beta (Prey)
+# =============================================================================
+# Smaller, faster prey that flee from the Alpha predators.
+# =============================================================================
+[[flocks]]
+flock.name = "Beta"
+flock.kind.kind = "Prey"
+flock.kind.size = 1.5
+flock.kind.color = [255, 180, 50]
+flock.kind.preys = []
+flock.kind.predators = ["Predator"]
+flock.kind.speed.min = 1.5
+flock.kind.speed.max = 3.0
+flock.kind.angular_speed.min = 0.0
+flock.kind.angular_speed.max = 0.08
+flock.kind.acceleration.min = -0.1
+flock.kind.acceleration.max = 0.1
+flock.kind.momentum = 0.5
+flock.kind.vision.min = 0.0
+flock.kind.vision.max = 30.0
+flock.kind.protected.min = 0.0
+flock.kind.protected.max = 10.0
+flock.kind.sep_weight = 0.04
+flock.kind.align_weight = 0.07
+flock.kind.coh_weight = 0.02
+boids = 100
+state.min = 0.7
+state.max = 1.0
+biases = []
+
+[[flocks.spawns]]
+position = [10.0, 0.0, 0.0]
+radius = 5.0

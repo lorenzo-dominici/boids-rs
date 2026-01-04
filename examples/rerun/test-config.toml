@@ -1,9 +1,29 @@
-# config.toml
+# =============================================================================
+# Test Configuration - Basic 3-Flock Simulation
+# =============================================================================
+# A simple configuration with three flock types demonstrating predator-prey
+# relationships: Hawks (predators), Pigeons (mid-level), and Bugs (prey).
+# =============================================================================
 
 iters = 1000
-env_size = 100.0
-turnback = 0.25
 
+# =============================================================================
+# Mesh Environment Configuration
+# =============================================================================
+[environment]
+path = "examples/rerun/assets/room.obj"  # Mesh file path
+inverted = true                          # Boids stay inside the mesh
+scale = 1.0                              # No scaling applied
+
+# APF Repulsion parameters
+repulsion_strength = 1.5                 # Force strength
+falloff_exponent = 2.0                   # Distance falloff
+weight_exponent = 2.0                    # Triangle weighting
+size_margin = 0.5                        # Safety margin
+
+# =============================================================================
+# Flock 1: Hawks (Apex Predators)
+# =============================================================================
 [[flocks]]
 flock.name = "Alpha"
 flock.kind.kind = "Hawk"
@@ -30,6 +50,13 @@ state.min = 0.75
 state.max = 1.0
 biases = []
 
+[[flocks.spawns]]
+position = [0.0, 0.0, 0.0]
+radius = 40.0
+
+# =============================================================================
+# Flock 2: Pigeons (Mid-level - prey to Hawks, predator to Bugs)
+# =============================================================================
 [[flocks]]
 flock.name = "Beta"
 flock.kind.kind = "Pigeon"
@@ -56,6 +83,13 @@ state.min = 0.5
 state.max = 1.0
 biases = []
 
+[[flocks.spawns]]
+position = [0.0, 0.0, 0.0]
+radius = 40.0
+
+# =============================================================================
+# Flock 3: Bugs (Prey - hunted by Pigeons)
+# =============================================================================
 [[flocks]]
 flock.name = "Gamma"
 flock.kind.kind = "Bug"
@@ -80,6 +114,10 @@ flock.kind.coh_weight = 0.05
 boids = 1200
 state.min = 0.25
 state.max = 1.0
+
+[[flocks.spawns]]
+position = [0.0, 0.0, 0.0]
+radius = 40.0
 
 [[flocks.biases]]
 position = [0.0, 0.0, 0.0]

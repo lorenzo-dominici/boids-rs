@@ -1,8 +1,38 @@
+# =============================================================================
+# Benchmark Configuration
+# =============================================================================
+# This configuration file defines parameters for the boids update benchmarks.
+# Benchmarks compare sequential vs parallel execution with AoS vs SoA layouts.
+# =============================================================================
+
+# Thread counts to benchmark (parallel execution)
 threads = [1, 2, 4, 8, 16, 32, 64]
+
+# Multipliers for base boid counts (scales the 'boids' value in each flock)
+# Final count = sum of (flock.boids * multiplier) for all flocks
 dim_multipliers = [256, 512, 1024, 2048]
+
+# Legacy parameters (kept for compatibility)
 env_size = 100.0
 turnback = 0.25
 
+# =============================================================================
+# Mesh Environment Configuration
+# =============================================================================
+[environment]
+path = "examples/rerun/assets/room.obj"  # Path to mesh file (OBJ or STL)
+inverted = true                          # true = boids inside mesh
+scale = 1.0                              # Mesh scale factor
+
+# APF Repulsion Parameters
+repulsion_strength = 1.5                 # Base repulsion force strength
+falloff_exponent = 2.0                   # Distance falloff steepness
+weight_exponent = 2.0                    # Multi-triangle weighting
+size_margin = 0.5                        # Safety margin for corrections
+
+# =============================================================================
+# Flock Definitions (Base boid counts - multiplied by dim_multipliers)
+# =============================================================================
 [[flocks]]
 flock.name = "F1"
 flock.kind.kind = "Alpha"
@@ -28,6 +58,10 @@ boids = 2
 state.min = 0.75
 state.max = 1.0
 biases = []
+
+[[flocks.spawns]]
+position = [0.0, 0.0, 0.0]
+radius = 40.0
 
 [[flocks]]
 flock.name = "F2"
@@ -55,6 +89,10 @@ state.min = 0.5
 state.max = 1.0
 biases = []
 
+[[flocks.spawns]]
+position = [0.0, 0.0, 0.0]
+radius = 40.0
+
 [[flocks]]
 flock.name = "F3"
 flock.kind.kind = "Gamma"
@@ -79,6 +117,10 @@ flock.kind.coh_weight = 0.05
 boids = 5
 state.min = 0.25
 state.max = 1.0
+
+[[flocks.spawns]]
+position = [0.0, 0.0, 0.0]
+radius = 40.0
 
 [[flocks.biases]]
 position = [0.0, 0.0, 0.0]
@@ -109,6 +151,10 @@ flock.kind.coh_weight = 0.05
 boids = 5
 state.min = 0.25
 state.max = 1.0
+
+[[flocks.spawns]]
+position = [0.0, 0.0, 0.0]
+radius = 40.0
 
 [[flocks.biases]]
 position = [0.0, 0.0, 0.0]

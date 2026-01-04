@@ -1,0 +1,47 @@
+# Simple Room/Box Mesh for Boids Simulation
+# A cube centered at origin with size 100x60x80
+# Normals point OUTWARD (standard convention for inverted=true containment)
+
+# Vertices (8 corners of the box)
+v -50.0 -30.0 -40.0
+v  50.0 -30.0 -40.0
+v  50.0  30.0 -40.0
+v -50.0  30.0 -40.0
+v -50.0 -30.0  40.0
+v  50.0 -30.0  40.0
+v  50.0  30.0  40.0
+v -50.0  30.0  40.0
+
+# Normals for each face (pointing OUTWARD)
+# Winding order is CCW when viewed from outside (which produces outward normals)
+vn  0.0  0.0 -1.0
+vn  0.0  0.0  1.0
+vn -1.0  0.0  0.0
+vn  1.0  0.0  0.0
+vn  0.0 -1.0  0.0
+vn  0.0  1.0  0.0
+
+# Faces - winding order CCW from outside so computed normal matches explicit normal
+# Front face (z = -40) - looking from -Z, CCW is: 1->4->3, 1->3->2
+f 1//1 4//1 3//1
+f 1//1 3//1 2//1
+
+# Back face (z = +40) - looking from +Z, CCW is: 5->6->7, 5->7->8
+f 5//2 6//2 7//2
+f 5//2 7//2 8//2
+
+# Left face (x = -50) - looking from -X, CCW is: 1->5->8, 1->8->4
+f 1//3 5//3 8//3
+f 1//3 8//3 4//3
+
+# Right face (x = +50) - looking from +X, CCW is: 2->3->7, 2->7->6
+f 2//4 3//4 7//4
+f 2//4 7//4 6//4
+
+# Bottom face (y = -30) - looking from -Y, CCW is: 1->2->6, 1->6->5
+f 1//5 2//5 6//5
+f 1//5 6//5 5//5
+
+# Top face (y = +30) - looking from +Y, CCW is: 4->8->7, 4->7->3
+f 4//6 8//6 7//6
+f 4//6 7//6 3//6
